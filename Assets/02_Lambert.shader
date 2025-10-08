@@ -1,4 +1,8 @@
 Shader "Unlit/02_Lambert" {
+    Properties
+    {
+        _Color("Color", Color) = (1,0,0,1)
+    }
     SubShader {
         Pass {
             CGPROGRAM
@@ -6,6 +10,8 @@ Shader "Unlit/02_Lambert" {
             #pragma fragment frag
             #include "UnityCG.cginc"
             #include "Lighting.cginc"
+
+            fixed4 _Color;
 
             struct appdata {
                 float4 vertex : POSITION;
@@ -26,7 +32,7 @@ Shader "Unlit/02_Lambert" {
 
             fixed4 frag(v2f i) : SV_Target {
                 float intensity = saturate(dot(normalize(i.normal), _WorldSpaceLightPos0));
-                fixed4 color = fixed4(1,1,1,1);
+                fixed4 color = _Color;
                 fixed4 diffuse = color * intensity * _LightColor0;
                 return diffuse;
             }
