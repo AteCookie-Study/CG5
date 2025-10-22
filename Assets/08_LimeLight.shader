@@ -1,4 +1,4 @@
-﻿Shader "Unlit/05_Test"
+﻿Shader "Unlit/08_LimeLight"
 {
     Properties
     {
@@ -59,13 +59,13 @@
                 return o;
             }
 
-            // 滑らかな量子化関数：各レベル間で _BandSmooth を使って滑らかに遷移させる
+            // 滑らかな量子化関数：各レベル間で _BandSmooth を使ってスムーズに遷移させる
             float SmoothToon(float nDotL, float steps, float bandSmooth)
             {
                 steps = max(1.0, steps);
                 float scaled = saturate(nDotL) * steps;
                 float idx = floor(scaled);
-                float frac = scaled - idx; // 0..1 の範囲
+                float frac = scaled - idx; // 0..1
                 float smooth = max(1e-5, bandSmooth);
                 float t = saturate(frac / smooth);
                 t = smoothstep(0.0, 1.0, t);
@@ -79,12 +79,12 @@
                 float3 lightDir = normalize(_WorldSpaceLightPos0.xyz);
                 float3 viewDir = normalize(_WorldSpaceCameraPos.xyz - i.worldPosition);
 
-                // ディフューズ（滑らかなトゥーン量子化）
+                // 漫反射（平滑Toon量子化）
                 float NdotL = dot(n, lightDir);
                 float toonDiffuseFactor = SmoothToon(NdotL, _Steps, _BandSmooth);
                 fixed3 diffuse = texColor.rgb * toonDiffuseFactor * _LightColor0.rgb;
 
-                // スペキュラー（閾値 + 滑らかな遷移）
+                // 高光（阈值 + 平滑过渡）
                 float3 reflectDir = reflect(-lightDir, n);
                 float vdotr = saturate(dot(normalize(viewDir), normalize(reflectDir)));
                 float specRaw = pow(vdotr, _Shininess);
@@ -92,7 +92,7 @@
                 float specMask = 1.0 - smoothstep(0.0, 1.0, specEdge);
                 fixed3 specular = _SpecularColor.rgb * specRaw * specMask * _LightColor0.rgb;
 
-                // リム / アウトライン（ライムライト）
+                // Rim / Outline (limelight)
                 float rim = 1.0 - saturate(dot(n, viewDir));
                 float edge0 = _EdgeStart;
                 float edge1 = saturate(_EdgeStart + _EdgeWidth);
